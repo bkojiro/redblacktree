@@ -19,11 +19,15 @@ class Node {
   void setValue(int a);
   void setColor(Color newCol);
   Color getColor();
+  void setParent(Node* node);
+  Node* getParent();
+  Node* getUncle();
  private:
   int value;
   Color color;
   Node* left;
   Node* right;
+  Node* parent;
 };
 
 #endif

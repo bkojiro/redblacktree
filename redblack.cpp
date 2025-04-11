@@ -7,6 +7,8 @@
 
 using namespace std;
 
+void fixIns(Node* &cur);
+void caseThree(Node* &cur);
 void insert(Node* &current, int a);
 void print(Node* current, int depth);
 void search(Node* current, int x);
@@ -63,6 +65,28 @@ int main() {
   return 0;
 }
 
+void fixIns(Node* &cur) {
+  //case 1
+  if (cur->getParent() == NULL && cur->getColor() == RED) {
+    cur->setColor(BLACK);
+  }
+  //case 2, parent is black
+  //case 3
+  caseThree(cur);
+}
+
+void caseThree(Node* &cur) {
+  if (cur->getUncle() != NULL && cur->getParent()->getParent() != NULL) {
+    if (cur->getParent()->getColor() == RED && cur->getUncle()->getColor() == RED) {
+      cur->getParent()->setColor(BLACK);
+      cur->getUncle()->setColor(BLACK);
+      Node* GP = cur->getParent()->getParent();
+      GP->setColor(RED);
+      fixIns(GP);
+    }
+  }
+}
+
 void insert(Node* &current, int a) {
   if (current->getValue() == 0) { //insert at root
     current->setValue(a);
@@ -75,7 +99,9 @@ void insert(Node* &current, int a) {
     } else {
       Node* temp = new Node();
       temp->setValue(a);
+      temp->setParent(current);
       current->setRight(temp);
+      fixIns(temp);
     }
   } else if (a < current->getValue()) {
     //go to left!
@@ -85,7 +111,9 @@ void insert(Node* &current, int a) {
     } else {
       Node* temp = new Node();
       temp->setValue(a);
+      temp->setParent(current);
       current->setLeft(temp);
+      fixIns(temp);
     }
   }
 }

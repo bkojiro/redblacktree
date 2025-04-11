@@ -7,9 +7,8 @@ Node::Node() {
   value = 0;
   color = RED;
   left = NULL;
-  left->setColor(BLACK);
   right = NULL;
-  right->setColor(BLACK);
+  parent = NULL;
 }
 
 Node::~Node() {
@@ -31,12 +30,10 @@ int Node::getValue() {
 }
 
 void Node::setLeft(Node* node) {
-  if (color == RED) node->setColor(BLACK);
   left = node;
 }
 
 void Node::setRight(Node* node) {
-  if (color == RED) node->setColor(BLACK);
   right = node;
 }
 
@@ -50,4 +47,26 @@ void Node::setColor(Color newCol) {
 
 Color Node::getColor() {
   return color;
+}
+
+void Node::setParent(Node* node) {
+  parent = node;
+}
+
+Node* Node::getParent() {
+  return parent;
+}
+
+Node* Node::getUncle() {
+  if (parent != NULL) { //make sure not head
+    if (parent->getParent() != NULL) { //make sure theres a grandpa
+      Node* GP = parent->getParent();
+      if (GP->getRight() == parent) {
+	return GP->getLeft();
+      } else if (GP->getLeft() == parent) {
+	return GP->getRight();
+      }
+    }
+  }
+  return NULL;
 }
