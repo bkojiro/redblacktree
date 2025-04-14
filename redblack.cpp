@@ -7,9 +7,11 @@
 
 using namespace std;
 
-void fixIns(Node* &cur);
-void caseThree(Node* &cur);
-void insert(Node* &current, int a);
+void fixIns(Node* &cur, Node* &root);
+void caseThree(Node* &cur, Node* &root);
+void caseFour(Node* &cur);
+void caseFive(Node* &cur, Node* &root);
+void insert(Node* &current, int a, Node* &root);
 void print(Node* current, int depth);
 void search(Node* current, int x);
 
@@ -33,7 +35,7 @@ int main() {
 	int a;
 	cin >> a;
 	cin.ignore();
-        insert(root, a);
+        insert(root, a, root);
       } else if (in == 'f') {
 	//insert by file
 	ifstream numbers;
@@ -41,7 +43,7 @@ int main() {
 	int x;
 	while (numbers >> x) {
 	  //insert x into tree
-	  insert(root, x);
+	  insert(root, x, root);
 	}
       }
     } else if (strcmp(action, "REMOVE") == 0) {
@@ -65,29 +67,85 @@ int main() {
   return 0;
 }
 
-void fixIns(Node* &cur) {
-  //case 1
-  if (cur->getParent() == NULL && cur->getColor() == RED) {
+void fixIns(Node* &cur, Node* &root) {
+  if (cur->getParent() == NULL && cur->getColor() == RED) { //case 1
     cur->setColor(BLACK);
   }
-  //case 2, parent is black
-  //case 3
-  caseThree(cur);
+  caseThree(cur, root);
+  caseFour(cur);
+  caseFive(cur, root);
 }
 
-void caseThree(Node* &cur) {
+void caseThree(Node* &cur, Node* &root) {
   if (cur->getUncle() != NULL && cur->getParent()->getParent() != NULL) {
     if (cur->getParent()->getColor() == RED && cur->getUncle()->getColor() == RED) {
       cur->getParent()->setColor(BLACK);
       cur->getUncle()->setColor(BLACK);
       Node* GP = cur->getParent()->getParent();
       GP->setColor(RED);
-      fixIns(GP);
+      fixIns(GP, root);
     }
   }
 }
 
-void insert(Node* &current, int a) {
+void caseFour(Node* &cur) {
+  if (cur->getParent()->getParent() != NULL && cur->getParent()->getColor() == RED) {
+    Node* GP = cur->getParent()->getParent();
+    Node* P = cur->getParent();
+    if (cur->getUncle() == NULL || cur->getUncle()->getColor() == BLACK) {
+      if (GP->getLeft() == P &&
+          P->getRight() == cur) { //parent is left, node is right
+        Node* temp = cur->getLeft();
+        P->setRight(temp);
+        cur->setLeft(P);
+        P->setParent(cur);
+        cur->setParent(GP);
+        GP->setLeft(cur);
+      } else if (GP->getRight() == P &&
+                 P->getLeft() == cur) { //parent is right, node is left
+        Node* temp = cur->getRight();
+        P->setLeft(temp);
+        cur->setRight(P);
+        P->setParent(cur);
+        cur->setParent(GP);
+        GP->setRight(cur);
+      }
+      cur = P; //set up for case five
+    }
+  }
+}
+
+void caseFive(Node* &cur, Node* &root) {
+  if (cur->getParent()->getParent() != NULL && cur->getParent()->getColor() == RED) {
+    Node* GP = cur->getParent()->getParent();
+    Node* P = cur->getParent();
+    if (cur->getUncle() == NULL || cur->getUncle()->getColor() == BLACK) {
+      bool changeRoot = false;
+      if (GP == root) changeRoot = true;//change where the root is pointing to
+      if (GP->getLeft() == P &&
+          P->getLeft() == cur) { //parent is left, node is left
+        GP->setColor(RED);
+        P->setColor(BLACK);
+        GP->setLeft(P->getRight());
+        P->setRight(GP);
+        P->setParent(GP->getParent());
+        GP->setParent(P);
+        if (changeRoot) root = P;
+      } else if (GP->getRight() == P &&
+                 P->getRight() == cur) { //parent is right, node is right
+        GP->setColor(RED);
+        P->setColor(BLACK);
+        GP->setRight(P->getLeft());
+        P->setLeft(GP);
+        P->setParent(GP->getParent());
+        GP->setParent(P);
+        if (changeRoot) root = P;
+      }
+    }
+  }
+}
+
+void insert(Node* &current, int a, Node* &root) {
   if (current->getValue() == 0) { //insert at root
     current->setValue(a);
     current->setColor(BLACK);
@@ -95,25 +153,25 @@ void insert(Node* &current, int a) {
     //go to right if greater/equal to current
     if (current->getRight() != NULL) {
       Node* right = current->getRight();
-      insert(right, a);
+      insert(right, a, root);
     } else {
       Node* temp = new Node();
       temp->setValue(a);
       temp->setParent(current);
       current->setRight(temp);
-      fixIns(temp);
+      fixIns(temp, root);
     }
   } else if (a < current->getValue()) {
     //go to left!
     if (current->getLeft() != NULL) {
       Node* left = current->getLeft();
-      insert(left, a);
+      insert(left, a, root);
     } else {
       Node* temp = new Node();
       temp->setValue(a);
       temp->setParent(current);
       current->setLeft(temp);
-      fixIns(temp);
+      fixIns(temp, root);
     }
   }
 }
