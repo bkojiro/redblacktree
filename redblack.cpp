@@ -30,21 +30,21 @@ int main() {
       cin >> in;
       cin.ignore();
       if (in == 'c') {
-	//insert by console
-	cout << "Enter a number" << endl << "> ";
-	int a;
-	cin >> a;
-	cin.ignore();
+	    //insert by console
+	    cout << "Enter a number" << endl << "> ";
+	    int a;
+	    cin >> a;
+	    cin.ignore();
         insert(root, a, root);
       } else if (in == 'f') {
-	//insert by file
-	ifstream numbers;
-	numbers.open("numbers.txt");
-	int x;
-	while (numbers >> x) {
-	  //insert x into tree
-	  insert(root, x, root);
-	}
+	    //insert by file
+	    ifstream numbers;
+	    numbers.open("numbers.txt");
+	    int x;
+	    while (numbers >> x) {
+	      //insert x into tree
+	      insert(root, x, root);
+	    }
       }
     } else if (strcmp(action, "REMOVE") == 0) {
       //remove a number covering the three cases + deleting root
@@ -70,10 +70,11 @@ int main() {
 void fixIns(Node* &cur, Node* &root) {
   if (cur->getParent() == NULL && cur->getColor() == RED) { //case 1
     cur->setColor(BLACK);
+  } else if (cur->getParent() != NULL) {
+    caseThree(cur, root);
+    caseFour(cur);
+    caseFive(cur, root);
   }
-  caseThree(cur, root);
-  caseFour(cur);
-  caseFive(cur, root);
 }
 
 void caseThree(Node* &cur, Node* &root) {
@@ -101,6 +102,7 @@ void caseFour(Node* &cur) {
         P->setParent(cur);
         cur->setParent(GP);
         GP->setLeft(cur);
+        cur = P;
       } else if (GP->getRight() == P &&
                  P->getLeft() == cur) { //parent is right, node is left
         Node* temp = cur->getRight();
@@ -109,8 +111,8 @@ void caseFour(Node* &cur) {
         P->setParent(cur);
         cur->setParent(GP);
         GP->setRight(cur);
+        cur = P;
       }
-      cur = P; //set up for case five
     }
   }
 }
@@ -120,6 +122,7 @@ void caseFive(Node* &cur, Node* &root) {
     Node* GP = cur->getParent()->getParent();
     Node* P = cur->getParent();
     if (cur->getUncle() == NULL || cur->getUncle()->getColor() == BLACK) {
+      cout << "casefive";
       bool changeRoot = false;
       if (GP == root) changeRoot = true;//change where the root is pointing to
       if (GP->getLeft() == P &&
@@ -130,7 +133,11 @@ void caseFive(Node* &cur, Node* &root) {
         P->setRight(GP);
         P->setParent(GP->getParent());
         GP->setParent(P);
-        if (changeRoot) root = P;
+        if (changeRoot) {
+          root = P;
+        } else {
+          P->getParent()->setLeft(P);
+        }
       } else if (GP->getRight() == P &&
                  P->getRight() == cur) { //parent is right, node is right
         GP->setColor(RED);
@@ -139,7 +146,11 @@ void caseFive(Node* &cur, Node* &root) {
         P->setLeft(GP);
         P->setParent(GP->getParent());
         GP->setParent(P);
-        if (changeRoot) root = P;
+        if (changeRoot) {
+          root = P;
+        } else {
+          P->getParent()->setRight(P);
+        }
       }
     }
   }
