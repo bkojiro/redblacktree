@@ -122,7 +122,6 @@ void caseFive(Node* &cur, Node* &root) {
     Node* GP = cur->getParent()->getParent();
     Node* P = cur->getParent();
     if (cur->getUncle() == NULL || cur->getUncle()->getColor() == BLACK) {
-      cout << "casefive";
       bool changeRoot = false;
       if (GP == root) changeRoot = true;//change where the root is pointing to
       if (GP->getLeft() == P &&
@@ -136,7 +135,11 @@ void caseFive(Node* &cur, Node* &root) {
         if (changeRoot) {
           root = P;
         } else {
-          P->getParent()->setLeft(P);
+          if (P->getParent()->getRight() == GP) {
+            P->getParent()->setRight(P);
+          } else if (P->getParent()->getLeft() == GP) {
+            P->getParent()->setLeft(P);
+          }
         }
       } else if (GP->getRight() == P &&
                  P->getRight() == cur) { //parent is right, node is right
@@ -149,7 +152,11 @@ void caseFive(Node* &cur, Node* &root) {
         if (changeRoot) {
           root = P;
         } else {
-          P->getParent()->setRight(P);
+          if (P->getParent()->getRight() == GP) {
+            P->getParent()->setRight(P);
+          } else if (P->getParent()->getLeft() == GP) {
+            P->getParent()->setLeft(P);
+          }
         }
       }
     }
