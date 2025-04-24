@@ -13,6 +13,7 @@ Node::Node() {
 
 Node::~Node() {
   value = 0;
+  parent = NULL;
   left = NULL;
   right = NULL;
 }

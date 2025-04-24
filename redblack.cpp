@@ -12,7 +12,7 @@ void caseThree(Node* &cur, Node* &root);
 void caseFour(Node* &cur);
 void caseFive(Node* &cur, Node* &root);
 void insert(Node* &current, int a, Node* &root);
-void remove(Node* &cur, int x);
+void remove(Node* &M, Node* &root, int x);
 void print(Node* current, int depth);
 void search(Node* current, int x);
 
@@ -53,7 +53,7 @@ int main() {
       int x;
       cin >> x;
       cin.ignore();
-      remove(root, x);//DO THIS FOR SECOND PART OF PROJECT
+      remove(root, root, x);//DO THIS FOR SECOND PART OF PROJECT
     } else if (strcmp(action, "PRINT") == 0) {
       //visualization of tree
       print(root, 0);
@@ -199,20 +199,64 @@ void insert(Node* &current, int a, Node* &root) {
   }
 }
 
-void remove(Node* current, int x) {
-  if (current != NULL) {
-    if (current->getValue() == x) {
-      //case 1
-      
-    } else if (x >= current->getValue()) {
-      remove(current->getRight(), x);
-    } else if (x < current->getValue()) {
-      remove(current->getLeft(), x);
+void remove(Node* &M, Node* &root, int x) {
+  if (M != NULL) {
+    if (M->getValue() == x) {
+      //find replacement
+      Node* C = M;
+      if (M->getLeft() != NULL) {
+	C = M->getLeft();
+	while (C->getRight() != NULL) {
+	  C = C->getRight();
+	}
+      }
+      if (M->getLeft() == C) { //fix this
+	if (M->getColor() == RED && C->getColor() == BLACK) {
+	  Node* P = M->getParent();
+	  C->setParent(P);
+	  if (M != root) { //if M was root
+	    if (P->getRight() == M) {
+	      P->setRight(C);
+	    } else if (P->getLeft() == M) {
+	      P->setLeft(C);
+	    }
+	  } else {
+	    root = C;
+	  }
+	  delete M;
+	} else if (M->getColor() == BLACK && C->getColor() == RED) {
+	  Node* P = M->getParent();
+	  C->setColor(BLACK);
+	  C->setParent(P);
+	  if (M != root) { //if M was root
+	    if (P->getRight() == M) {
+	      P->setRight(C);
+	    } else if (P->getLeft() == M) {
+	      P->setLeft(C);
+	    }
+	  } else {
+	    root = C;
+	  }
+	  delete M;
+	} else if (M->getColor() == BLACK && C->getColor() == BLACK) {
+	  if (M == root) { //case1
+	    C->setParent(NULL);
+	    delete M;
+	    root = C;
+	  }
+	}
+      }
+    } else if (x >= M->getValue()) {
+      M = M->getRight();
+      remove(M, root, x);
+    } else if (x < M->getValue()) {
+      M = M->getLeft();
+      remove(M, root, x);
     }
   }
 }
 
-void print(Node* cur, int depth) {
+void print(Node* current, int depth) {
   if (current->getRight() != NULL) {
     print(current->getRight(), depth + 1);
   }
