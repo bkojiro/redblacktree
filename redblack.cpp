@@ -202,7 +202,8 @@ void insert(Node* &current, int a, Node* &root) {
 void remove(Node* current, int x) {
   if (current != NULL) {
     if (current->getValue() == x) {
-      //account for cases
+      //case 1
+      
     } else if (x >= current->getValue()) {
       remove(current->getRight(), x);
     } else if (x < current->getValue()) {
