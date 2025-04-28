@@ -22,6 +22,7 @@ class Node {
   void setParent(Node* node);
   Node* getParent();
   Node* getUncle();
+  Node* getSibling();
  private:
   int value;
   Color color;

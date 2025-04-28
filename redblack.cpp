@@ -12,7 +12,7 @@ void caseThree(Node* &cur, Node* &root);
 void caseFour(Node* &cur);
 void caseFive(Node* &cur, Node* &root);
 void insert(Node* &current, int a, Node* &root);
-void remove(Node* &M, Node* &root, int x);
+void remove(Node* M, Node* &root, int x);
 void print(Node* current, int depth);
 void search(Node* current, int x);
 
@@ -199,22 +199,36 @@ void insert(Node* &current, int a, Node* &root) {
   }
 }
 
-void remove(Node* &M, Node* &root, int x) {
+void remove(Node* M, Node* &root, int x) {
   if (M != NULL) {
     if (M->getValue() == x) {
       //find replacement
-      Node* C = M;
-      if (M->getLeft() != NULL) {
-	C = M->getLeft();
-	while (C->getRight() != NULL) {
-	  C = C->getRight();
+      if (M->getLeft() == NULL && M->getRight() == NULL) { //no children
+	if (M == root) {
+	  M->setValue(0);
+	} else {
+	  Node* P = M->getParent();
+	  if (P->getRight() == M) {
+	    P->setRight(NULL);
+	  } else {
+	    P->setLeft(NULL);
+	  }
+	  delete M;
 	}
-      }
-      if (M->getLeft() == C) { //fix this
+      } else {
+	Node* C = M;
+	if (M->getLeft() != NULL) { //has a left child
+	  C = M->getLeft();
+	  while (C->getRight() != NULL) {
+	    C = M->getRight();
+	  }
+	} else if (M->getRight() != NULL) { //no left, has right child
+	  C = M->getRight();
+	}
 	if (M->getColor() == RED && C->getColor() == BLACK) {
 	  Node* P = M->getParent();
 	  C->setParent(P);
-	  if (M != root) { //if M was root
+          if (M != root) { //if M was not root
 	    if (P->getRight() == M) {
 	      P->setRight(C);
 	    } else if (P->getLeft() == M) {
@@ -228,7 +242,7 @@ void remove(Node* &M, Node* &root, int x) {
 	  Node* P = M->getParent();
 	  C->setColor(BLACK);
 	  C->setParent(P);
-	  if (M != root) { //if M was root
+	  if (M != root) { //if M was not root
 	    if (P->getRight() == M) {
 	      P->setRight(C);
 	    } else if (P->getLeft() == M) {
@@ -243,15 +257,15 @@ void remove(Node* &M, Node* &root, int x) {
 	    C->setParent(NULL);
 	    delete M;
 	    root = C;
+          } else if () {
+
 	  }
 	}
       }
     } else if (x >= M->getValue()) {
-      M = M->getRight();
-      remove(M, root, x);
+      remove(M->getRight(), root, x);
     } else if (x < M->getValue()) {
-      M = M->getLeft();
-      remove(M, root, x);
+      remove(M->getLeft(), root, x);
     }
   }
 }

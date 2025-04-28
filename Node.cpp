@@ -13,7 +13,7 @@ Node::Node() {
 
 Node::~Node() {
   value = 0;
-  parent = NULL;
+  //parent = NULL;
   left = NULL;
   right = NULL;
 }
@@ -68,6 +68,19 @@ Node* Node::getUncle() {
 	return GP->getRight();
       }
     }
+  }
+  return NULL;
+}
+
+Node* Node::getSibling() {
+  if (parent != NULL) {
+    Node* S = NULL;
+    if (parent->getRight() == this) {
+      S = parent->getLeft();
+    } else if (parent->getLeft() == this) {
+      S = parent->getRight();
+    }
+    return S;
   }
   return NULL;
 }
