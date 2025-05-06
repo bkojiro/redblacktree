@@ -205,9 +205,9 @@ void remove(Node* M, Node* &root, int x) {
     if (M->getValue() == x) {
       //find replacement
       if (M->getLeft() == NULL && M->getRight() == NULL) { //no children
-	if (M == root) {
+	if (M == root) { //delete root
 	  M->setValue(0);
-	} else {
+	} else { //WORK ON THIS!!!!!!
 	  Node* P = M->getParent();
 	  if (P->getRight() == M) {
 	    P->setRight(NULL);
@@ -262,8 +262,8 @@ void remove(Node* M, Node* &root, int x) {
 	  }
 	  delete M;
 	} else if (M->getColor() == BLACK && C->getColor() == BLACK) {
-	  if ((M->getRight() == C && M->getLeft() == NULL) ||
-	      (M->getLeft() == C && M->getRight() == NULL)) { //one non-leaf child
+	  //if ((M->getRight() == C && M->getLeft() == NULL) ||
+	  //    (M->getLeft() == C && M->getRight() == NULL)) { //one non-leaf child
 	    if (M == root) { //case1
 	      C->setParent(NULL);
 	      delete M;
@@ -280,7 +280,7 @@ void remove(Node* M, Node* &root, int x) {
 	      Node* N = C;
 	      fixRem(N, root);
 	    }
-	  }
+	    //}
 	}
       }
     } else if (x >= M->getValue()) {
@@ -295,62 +295,100 @@ void fixRem(Node* N, Node* &root) {
   Node* P = N->getParent();
   if (N->getSibling() != NULL) {
     Node* S = N->getSibling();
-  if (S->getColor() == RED &&
-      P->getColor() == BLACK) { //case2
-    P->setParent(S);
-    P->setColor(RED);
-    S->setColor(BLACK);
-    if (P->getLeft() == N) { //N is on the left
-      P->setRight(S->getLeft());
-      S->getLeft()->setParent(P);
-      S->setLeft(P);
-    } else if (P->getRight() == N) { //N is on the right
+    if (S->getColor() == RED &&
+	P->getColor() == BLACK) { //case2
+      P->setParent(S);
+      P->setColor(RED);
+      S->setColor(BLACK);
+      if (P->getLeft() == N) { //N is on the left
+	P->setRight(S->getLeft());
+	S->getLeft()->setParent(P);
+	S->setLeft(P);
+      } else if (P->getRight() == N) { //N is on the right
+	P->setLeft(S->getRight());
+	S->getRight()->setParent(P);
+	S->setRight(P);
+      }
+    }
+    if (S->getColor() == BLACK &&
+	P->getColor() == BLACK &&
+	(S->getRight() == NULL || S->getRight()->getColor() == BLACK) &&
+	(S->getLeft() == NULL || S->getLeft()->getColor() == BLACK)) { //case3
+      S->setColor(RED);
+      fixRem(P, root);
+    }
+    if (P->getColor() == RED &&
+	(S->getRight() == NULL || S->getRight()->getColor() == BLACK) &&
+	(S->getLeft() == NULL || S->getLeft()->getColor() == BLACK)) { //case4
+      P->setColor(BLACK);
+      S->setColor(RED);
+      return;
+    }
+    //case5
+    if (P->getLeft() == S &&
+	S->getColor() == BLACK &&
+	S->getRight() != NULL && S->getRight()->getColor() == RED &&
+	S->getLeft() != NULL && S->getLeft()->getColor() == BLACK) { //S is on the left
+      Node* SR = S->getRight();
+      Node* SL = S->getLeft();
+      SR->setParent(P);
+      S->setRight(SR->getLeft());
+      SR->setLeft(S);
+      S->setParent(SR);
+      SR->setColor(BLACK);
+      S->setColor(RED);
+    } else if (P->getRight() == S &&
+	       S->getColor() == BLACK &&
+	       S->getLeft() != NULL && S->getLeft()->getColor() == RED &&
+	       S->getRight() != NULL && S->getRight()->getColor() == BLACK) { //S is on the right
+      Node* SR = S->getRight();
+      Node* SL = S->getLeft();
+      SL->setParent(P);
+      S->setLeft(SL->getRight());
+      SL->setRight(S);
+      S->setParent(SL);
+      SL->setColor(BLACK);
+      S->setColor(RED);
+    } else if (P->getRight() == N && //CASE6
+	       S->getColor() == BLACK &&
+	       S->getLeft() != NULL &&
+	       S->getLeft()->getColor() == RED) { //N is on the right
+      S->setColor(P->getColor());
+      S->getLeft()->setColor(BLACK);
+      P->setColor(BLACK);
       P->setLeft(S->getRight());
-      S->getRight()->setParent(P);
+      if (P->getParent() != NULL) {
+	Node* GP = P->getParent();
+	if (GP->getRight() == P) {
+	  GP->setRight(S);
+	} else if (GP->getLeft() == P) {
+	  GP->setLeft(S);
+	}
+      }
+      S->setParent(P->getParent());
+      P->setParent(S);
       S->setRight(P);
+    } else if (P->getLeft() == N &&
+	       S->getColor() == BLACK &&
+	       S->getRight() != NULL &&
+	       S->getRight()->getColor() == RED) { //N is on the left
+      S->setColor(P->getColor());
+      S->getRight()->setColor(BLACK);
+      P->setColor(BLACK);
+      P->setRight(S->getLeft());
+      if (P->getParent() != NULL) {
+	Node* GP = P->getParent();
+	if (GP->getRight() == P) {
+	  GP->setRight(S);
+	} else if (GP->getLeft() == P) {
+	  GP->setLeft(S);
+	}
+      }
+      S->setParent(P->getParent());
+      P->setParent(S);
+      S->setLeft(P);
     }
   }
-  if (S->getColor() == BLACK &&
-      P->getColor() == BLACK &&
-      (S->getRight() == NULL || S->getRight()->getColor() == BLACK) &&
-      (S->getLeft() == NULL || S->getLeft()->getColor() == BLACK)) { //case3
-    S->setColor(RED);
-    fixRem(P, root);
-  }
-  if (P->getColor() == RED &&
-      (S->getRight() == NULL || S->getRight()->getColor() == BLACK) &&
-      (S->getLeft() == NULL || S->getLeft()->getColor() == BLACK)) { //case4
-    P->setColor(BLACK);
-    S->setColor(RED);
-    return;
-  }
-  //case5
-  if (P->getLeft() == S &&
-      S->getColor() == BLACK &&
-      S->getRight() != NULL && S->getRight()->getColor() == RED &&
-      S->getLeft() != NULL && S->getLeft()->getColor() == BLACK) { //S is on the left
-    Node* SR = S->getRight();
-    Node* SL = S->getLeft();
-    SR->setParent(P);
-    S->setRight(SR->getLeft());
-    SR->setLeft(S);
-    S->setParent(SR);
-    SR->setColor(BLACK);
-    S->setColor(RED);
-  } else if (P->getRight() == S &&
-	     S->getColor() == BLACK &&
-	     S->getLeft() != NULL && S->getLeft()->getColor() == RED &&
-	     S->getRight() != NULL && S->getRight()->getColor() == BLACK) { //S is on the right
-    Node* SR = S->getRight();
-    Node* SL = S->getLeft();
-    SL->setParent(P);
-    S->setLeft(SL->getRight());
-    SL->setRight(S);
-    S->setParent(SL);
-    SL->setColor(BLACK);
-    S->setColor(RED);
-  }
-  //work on case 6/7
 }
 
 void print(Node* current, int depth) {
