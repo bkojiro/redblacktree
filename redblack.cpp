@@ -205,27 +205,63 @@ void remove(Node* M, Node* &root, int x) {
     if (M->getValue() == x) {
       //find replacement
       if (M->getLeft() == NULL && M->getRight() == NULL) { //no children
-	if (M == root) { //delete root
-	  M->setValue(0);
-	} else { //WORK ON THIS!!!!!!
-	  Node* P = M->getParent();
-	  if (P->getRight() == M) {
-	    P->setRight(NULL);
-	  } else {
-	    P->setLeft(NULL);
-	  }
-	  delete M;
-	}
-      } else {
+	goto no_children;
+      } else if (M->getLeft() != NULL && M->getRight() != NULL) { //two children
 	Node* C = M;
-	if (M->getLeft() != NULL) { //has a left child
-	  C = M->getLeft();
-	  while (C->getRight() != NULL) {
-	    C = M->getRight();
-	  }
-	} else if (M->getRight() != NULL) { //no left, has right child
-	  C = M->getRight();
+        if (M->getLeft() != NULL) { //has a left child
+          C = M->getLeft();
+          while (C->getRight() != NULL) {
+            C = M->getRight();
+          }
+        } else if (M->getRight() != NULL) { //no left, has right child
+          C = M->getRight();
+        }
+	M->setValue(C->getValue());
+        if (M->getLeft() == NULL && M->getRight() == NULL) { //no children
+	  goto no_children;
+	} else {
+	  goto one_child;
 	}
+      } else { //one child
+	goto one_child;
+      }
+
+      no_children:
+	if (M == root) { //NO CHILDREN, DELETE ROOT
+          M->setValue(0);
+        } else if (M->getColor() == RED) { //NO CHILDREN, DELETED IS RED
+          Node* P = M->getParent();
+          if (P->getRight() == M) {
+            P->setRight(NULL);
+          } else {
+            P->setLeft(NULL);
+          }
+          delete M;
+        } else { //NO CHILDREN, DELETED IS BLACK
+
+        }
+
+    one_child:
+	Node* P = M->getParent();
+        Node* C = M;
+        if (M->getLeft() != NULL) { //has a left child
+          C = M->getLeft();
+        } else if (M->getRight() != NULL) { //has a right child
+          C = M->getRight();
+        }
+        C->setParent(P);
+        C->setColor(BLACK);
+        if (M == root) {
+          root = C;
+        } else {
+          if (P->getRight() == M) {
+            P->setRight(C);
+          } else if (P->getLeft() == M) {
+            P->setLeft(C);
+          }
+        }
+
+	//THIS IS ALL FOR ONE CHILD
 	if (M->getColor() == RED && C->getColor() == BLACK) {
 	  Node* P = M->getParent();
 	  C->setParent(P);
