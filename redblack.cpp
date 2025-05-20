@@ -13,6 +13,7 @@ void caseFour(Node* &cur);
 void caseFive(Node* &cur, Node* &root);
 void insert(Node* &current, int a, Node* &root);
 void remove(Node* M, Node* &root, int x);
+void case2Rem(Node* N);
 void fixRem(Node* N, Node* &root);
 void print(Node* current, int depth);
 void search(Node* current, int x);
@@ -32,21 +33,21 @@ int main() {
       cin >> in;
       cin.ignore();
       if (in == 'c') {
-	    //insert by console
-	    cout << "Enter a number" << endl << "> ";
-	    int a;
-	    cin >> a;
-	    cin.ignore();
+	//insert by console
+	cout << "Enter a number" << endl << "> ";
+	int a;
+	cin >> a;
+	cin.ignore();
         insert(root, a, root);
       } else if (in == 'f') {
-	    //insert by file
-	    ifstream numbers;
-	    numbers.open("numbers.txt");
-	    int x;
-	    while (numbers >> x) {
-	      //insert x into tree
-	      insert(root, x, root);
-	    }
+	//insert by file
+	ifstream numbers;
+	numbers.open("numbers.txt");
+	int x;
+	while (numbers >> x) {
+	  //insert x into tree
+	  insert(root, x, root);
+	}
       }
     } else if (strcmp(action, "REMOVE") == 0) {
       //remove a number covering the three cases + deleting root
@@ -54,7 +55,7 @@ int main() {
       int x;
       cin >> x;
       cin.ignore();
-      remove(root, root, x);//DO THIS FOR SECOND PART OF PROJECT
+      remove(root, root, x);
     } else if (strcmp(action, "PRINT") == 0) {
       //visualization of tree
       print(root, 0);
@@ -170,6 +171,7 @@ void caseFive(Node* &cur, Node* &root) {
 }
 
 void insert(Node* &current, int a, Node* &root) {
+  cout << root->getValue();
   if (current->getValue() == 0) { //insert at root
     current->setValue(a);
     current->setColor(BLACK);
@@ -223,7 +225,7 @@ void remove(Node* M, Node* &root, int x) {
         if (M->getLeft() != NULL) { //has a left child
 	  C = M->getLeft();
 	  while (C->getRight() != NULL) {
-            C = M->getRight();
+            C = C->getRight();
           }
         } else if (M->getRight() != NULL) { //no left, has right child
           C = M->getRight();
@@ -258,37 +260,68 @@ void remove(Node* M, Node* &root, int x) {
   }
 }
 
+void case2Rem(Node* N) {
+  if (N->getParent() != NULL && N->getSibling() != NULL) { 
+    Node* S = N->getSibling();
+    Node* P = N->getParent();
+    if (S->getColor() == BLACK &&
+        P->getColor() == BLACK &&
+        (S->getRight() == NULL || S->getRight()->getColor() == BLACK) &&
+        (S->getLeft() == NULL || S->getLeft()->getColor() == BLACK)) { //case2
+      S->setColor(RED);
+      if (P != NULL) case2Rem(P);
+    }
+  }
+}
+
 void fixRem(Node* N, Node* &root) {
   Node* P = N->getParent();
-  if (N->getSibling() != NULL) {
+  if (N->getSibling() != NULL) { //i dont think i need this?
     Node* S = N->getSibling();
+    if (S->getColor() == BLACK &&
+        P->getColor() == BLACK &&
+        (S->getRight() == NULL || S->getRight()->getColor() == BLACK) &&
+        (S->getLeft() == NULL || S->getLeft()->getColor() == BLACK)) { //case2
+      case2Rem(N);
+    }
     if (S->getColor() == RED &&
-	P->getColor() == BLACK) { //case2
+	P->getColor() == BLACK) { //case3
       P->setParent(S);
+      S->setParent(P->getParent());
+      if (P != root) {
+	Node* GP = P->getParent();
+	if (GP->getLeft() == P) { //P is on the left
+	  GP->setLeft(S);
+	} else if (GP->getRight() == P) { //P is on the right
+	  GP->setRight(S);
+	}
+      } else {
+	root = S;
+      }
       P->setColor(RED);
       S->setColor(BLACK);
       if (P->getLeft() == N) { //N is on the left
 	P->setRight(S->getLeft());
-	S->getLeft()->setParent(P);
+	if (S->getLeft() != NULL) S->getLeft()->setParent(P);
 	S->setLeft(P);
       } else if (P->getRight() == N) { //N is on the right
 	P->setLeft(S->getRight());
-	S->getRight()->setParent(P);
+	if (S->getRight() != NULL) S->getRight()->setParent(P);
 	S->setRight(P);
-      }
-    }
-    if (S->getColor() == BLACK &&
-	P->getColor() == BLACK &&
-	(S->getRight() == NULL || S->getRight()->getColor() == BLACK) &&
-	(S->getLeft() == NULL || S->getLeft()->getColor() == BLACK)) { //case3
-      S->setColor(RED);
-      fixRem(P, root);
+      }      
     }
     if (P->getColor() == RED &&
 	(S->getRight() == NULL || S->getRight()->getColor() == BLACK) &&
 	(S->getLeft() == NULL || S->getLeft()->getColor() == BLACK)) { //case4
       P->setColor(BLACK);
       S->setColor(RED);
+      if (P->getLeft() == N) { //N is on the left
+	P->setLeft(NULL);
+	delete N;
+      } else if (P->getRight() == N) { //N is on the right
+	P->setRight(NULL);
+	delete N;
+      }
       return;
     }
     //case5
@@ -355,6 +388,13 @@ void fixRem(Node* N, Node* &root) {
       P->setParent(S);
       S->setLeft(P);
     }
+  }
+  if (P->getLeft() == N) { //N is on the left
+    P->setLeft(NULL);
+    delete N;
+  } else if (P->getRight() == N) { //N is on the right
+    P->setRight(NULL);
+    delete N;
   }
 }
 
