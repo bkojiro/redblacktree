@@ -205,30 +205,8 @@ void remove(Node* M, Node* &root, int x) {
     if (M->getValue() == x) {
       //find replacement
       if (M->getLeft() == NULL && M->getRight() == NULL) { //no children
-	goto no_children;
-      } else if (M->getLeft() != NULL && M->getRight() != NULL) { //two children
-	Node* C = M;
-        if (M->getLeft() != NULL) { //has a left child
-          C = M->getLeft();
-          while (C->getRight() != NULL) {
-            C = M->getRight();
-          }
-        } else if (M->getRight() != NULL) { //no left, has right child
-          C = M->getRight();
-        }
-	M->setValue(C->getValue());
-        if (M->getLeft() == NULL && M->getRight() == NULL) { //no children
-	  goto no_children;
-	} else {
-	  goto one_child;
-	}
-      } else { //one child
-	goto one_child;
-      }
-
-      no_children:
 	if (M == root) { //NO CHILDREN, DELETE ROOT
-          M->setValue(0);
+	  M->setValue(0);
         } else if (M->getColor() == RED) { //NO CHILDREN, DELETED IS RED
           Node* P = M->getParent();
           if (P->getRight() == M) {
@@ -238,10 +216,21 @@ void remove(Node* M, Node* &root, int x) {
           }
           delete M;
         } else { //NO CHILDREN, DELETED IS BLACK
-
+          fixRem(M, root);
         }
-
-    one_child:
+      } else if (M->getLeft() != NULL && M->getRight() != NULL) { //two children
+	Node* C = M;
+        if (M->getLeft() != NULL) { //has a left child
+	  C = M->getLeft();
+	  while (C->getRight() != NULL) {
+            C = M->getRight();
+          }
+        } else if (M->getRight() != NULL) { //no left, has right child
+          C = M->getRight();
+        }
+	M->setValue(C->getValue());
+        remove(C, root, C->getValue());
+      } else { //one child
 	Node* P = M->getParent();
         Node* C = M;
         if (M->getLeft() != NULL) { //has a left child
@@ -260,64 +249,6 @@ void remove(Node* M, Node* &root, int x) {
             P->setLeft(C);
           }
         }
-
-	//THIS IS ALL FOR ONE CHILD
-	if (M->getColor() == RED && C->getColor() == BLACK) {
-	  Node* P = M->getParent();
-	  C->setParent(P);
-	  if (C != M->getRight()) {
-            C->setRight(M->getRight());
-            M->getRight()->setParent(C);
-          }
-	  if (M != root) { //if M was not root
-	    if (P->getRight() == M) {
-	      P->setRight(C);
-	    } else if (P->getLeft() == M) {
-	      P->setLeft(C);
-	    }
-	  } else {
-	    root = C;
-	  }
-	  delete M;
-	} else if (M->getColor() == BLACK && C->getColor() == RED) {
-	  Node* P = M->getParent();
-	  C->setColor(BLACK);
-	  C->setParent(P);
-	  if (C != M->getRight()) {
-	    C->setRight(M->getRight());
-	    M->getRight()->setParent(C);
-	  }
-	  if (M != root) { //if M was not root
-	    if (P->getRight() == M) {
-	      P->setRight(C);
-	    } else if (P->getLeft() == M) {
-	      P->setLeft(C);
-	    }
-	  } else {
-	    root = C;
-	  }
-	  delete M;
-	} else if (M->getColor() == BLACK && C->getColor() == BLACK) {
-	  //if ((M->getRight() == C && M->getLeft() == NULL) ||
-	  //    (M->getLeft() == C && M->getRight() == NULL)) { //one non-leaf child
-	    if (M == root) { //case1
-	      C->setParent(NULL);
-	      delete M;
-	      root = C;
-	    } else {
-	      //move C into M and rename as N
-	      Node* P = M->getParent();
-	      C->setParent(P);
-	      if (P->getRight() == M) {
-		P->setRight(C);
-	      } else if (P->getLeft() == M) {
-		P->setLeft(C);
-	      }
-	      Node* N = C;
-	      fixRem(N, root);
-	    }
-	    //}
-	}
       }
     } else if (x >= M->getValue()) {
       remove(M->getRight(), root, x);
